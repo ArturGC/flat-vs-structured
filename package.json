@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "ArturGC",
+  "license": "MIT",
   "dependencies": {
     "@faker-js/faker": "8.3.1",
     "mongodb": "6.3.0"
