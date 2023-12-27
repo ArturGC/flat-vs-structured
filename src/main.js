@@ -1,32 +1,26 @@
 'use strict';
 
 const mdb = require('./mdb');
-const flat = require('./plain');
-const structured = require('./structured');
+const helpers = require('./helpers');
 
 const queryIterations = 100;
 const numberOfDocuments = 10_000;
-const testes = [
-  { numberOfFields: 10, numberOfSubFields: 5 },
-  { numberOfFields: 25, numberOfSubFields: 5 },
-  { numberOfFields: 50, numberOfSubFields: 5 },
-  { numberOfFields: 100, numberOfSubFields: 5 },
+const tests = [
+  { schema: [2, 5] },
+  { schema: [5, 5] },
+  { schema: [10, 5] },
+  { schema: [20, 5] },
 ];
 
-const populateCollections = async ({ numberOfFields, numberOfSubFields }) => {
+const populateCollections = async ({ schema }) => {
   await mdb.dropCollections();
 
-  const docsFlat = flat.generateDocuments({
-    numberOfDocuments,
-    numberOfFields,
-    numberOfSubFields,
-  });
-
-  const docsStructured = structured.generateDocuments({
-    numberOfDocuments,
-    numberOfFields,
-    numberOfSubFields,
-  });
+  const docsStructured = Array.from({ length: numberOfDocuments }).map(() =>
+    helpers.generateStructuredDocument(schema)
+  );
+  const docsFlat = docsStructured.map((docStructured) =>
+    helpers.convertFromStructuredToFlat(docStructured)
+  );
 
   await Promise.all([
     mdb.collections.flat.insertMany(docsFlat),
@@ -40,11 +34,13 @@ const queryDocs = async (collection) => {
 };
 
 const main = async () => {
-  for (const { numberOfFields, numberOfSubFields } of testes) {
+  for (const { schema } of tests) {
+    const totalFields = schema.reduce((acc, cur) => acc * cur, 1);
     console.log(
-      `\n\nNumber of field: ${numberOfFields}, Number of Subfields: ${numberOfSubFields}`
+      `\n\nFlat Schema: ${totalFields}, Structured Schema: ${schema}`
     );
-    await populateCollections({ numberOfFields, numberOfSubFields });
+
+    await populateCollections({ schema });
 
     const structuredInit = new Date();
     await queryDocs(mdb.collections.structured);

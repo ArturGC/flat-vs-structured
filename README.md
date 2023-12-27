@@ -1,1 +1,1 @@
-# flat-vs-structured
+# Flat vs Structured
